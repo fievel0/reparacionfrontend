@@ -3,7 +3,7 @@
 export interface Client {
   id_customer: number
   name: string
-  card_identifi: string
+  cardIdentifi: string
   phone: string
   mail: string
 }

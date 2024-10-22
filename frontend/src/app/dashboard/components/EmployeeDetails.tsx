@@ -18,7 +18,7 @@ type EmployeeDetailsProps = {
   onDelete?: (id: number) => void
 }
 
-export default function EmployeeDetails({ employee, onEdit, onDelete }: EmployeeDetailsProps) {
+export default function EmployeeDetails({ employee, onEdit, onDelete }: Readonly<EmployeeDetailsProps>) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const router = useRouter()
 
@@ -54,6 +54,8 @@ export default function EmployeeDetails({ employee, onEdit, onDelete }: Employee
       <div>
         <span className="text-lg font-semibold mb-2">{employee.nameEmployee}</span>
         <span> -  {employee.positionEmployee}</span>
+        <span> -  {employee.dirEmployee}</span>
+        <span> -  {employee.telEmployee}</span>
       </div>
       <div className="flex space-x-2">
         {onEdit && (

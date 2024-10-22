@@ -11,17 +11,21 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useModal } from '@/contexts/Modalcontext'
 
+interface DashboardNavProps {
+  onShowClientList: () => void;
+  onShowEmployeeList: () => void;
+  onShowSearchClient: () => void;
+  onShowNewWorkOrder: () => void;
+}
+
 export default function DashboardNav({ 
   onShowClientList, 
   onShowEmployeeList,
-  onShowSearchClient
-}: { 
-  onShowClientList: () => void,
-  onShowEmployeeList: () => void,
-  onShowSearchClient: () => void
-}) {
+  onShowSearchClient,
+  onShowNewWorkOrder, // Asegúrate de que esta propiedad esté incluida
+}: DashboardNavProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const { openSearchWorkOrder, openNewClient, openNewEmployee, openNewWorkOrder } = useModal()
+  const { openSearchWorkOrder, openNewClient, openNewEmployee } = useModal()
 
   return (
     <nav className="bg-white shadow-md">
@@ -66,7 +70,7 @@ export default function DashboardNav({
                   <Button variant="ghost">Orden de Trabajo</Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onSelect={openNewWorkOrder}>
+                  <DropdownMenuItem onSelect={onShowNewWorkOrder}>
                     Nueva Orden
                   </DropdownMenuItem>
                   <DropdownMenuItem onSelect={openSearchWorkOrder}>
@@ -135,8 +139,8 @@ export default function DashboardNav({
                 <Button variant="ghost" className="w-full text-left">Orden de Trabajo</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>
-                  <Link href="/dashboard/work-orders/new" className="w-full">Nueva Orden</Link>
+                <DropdownMenuItem onSelect={onShowNewWorkOrder}>
+                  Nueva Orden
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={openSearchWorkOrder}>
                   Buscar Orden de Trabajo

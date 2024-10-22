@@ -18,23 +18,30 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [showEmployeeList, setShowEmployeeList] = useState(false)
   const [showSearchClient, setShowSearchClient] = useState(false)
   const [showNewWorkOrder, setShowNewWorkOrder] = useState(false)
+  const [isSearchWorkOrderOpen, setIsSearchWorkOrderOpen] = useState(false)
 
   const handleShowClientList = () => {
     setShowClientList(true)
     setShowEmployeeList(false)
     setShowSearchClient(false)
+    setShowNewWorkOrder(false)
+    setIsSearchWorkOrderOpen(false)
   }
 
   const handleShowEmployeeList = () => {
     setShowEmployeeList(true)
     setShowClientList(false)
     setShowSearchClient(false)
+    setShowNewWorkOrder(false)
+    setIsSearchWorkOrderOpen(false)
   }
 
   const handleShowSearchClient = () => {
     setShowSearchClient(true)
     setShowClientList(false)
     setShowEmployeeList(false)
+    setShowNewWorkOrder(false)
+    setIsSearchWorkOrderOpen(false)
   }
 
   const handleShowNewWorkOrder = () => {
@@ -42,28 +49,38 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     setShowClientList(false)
     setShowEmployeeList(false)
     setShowSearchClient(false)
+    setIsSearchWorkOrderOpen(false)
+  }
+
+  const openSearchWorkOrder = () => {
+    setIsSearchWorkOrderOpen(true)
+    setShowClientList(false)
+    setShowEmployeeList(false)
+    setShowSearchClient(false)
+    setShowNewWorkOrder(false)
   }
 
   return (
     <ModalProvider>
       <div className="min-h-screen bg-gray-100">
         <DashboardNav 
+          onShowNewWorkOrder={handleShowNewWorkOrder}
           onShowClientList={handleShowClientList} 
           onShowEmployeeList={handleShowEmployeeList}
           onShowSearchClient={handleShowSearchClient}
-          onShowNewWorkOrder={handleShowNewWorkOrder}
+          openSearchWorkOrder={openSearchWorkOrder}
         />
         <main className="container mx-auto px-4 py-8">
-          {showClientList ? <ClientList /> : 
+          {showNewWorkOrder ? <NewWorkOrderForm /> : 
+           showClientList ? <ClientList /> : 
            showEmployeeList ? <EmployeeList /> : 
            showSearchClient ? <SearchClient /> : 
-           showNewWorkOrder ? <NewWorkOrderForm /> : 
            children}
         </main>
-        <SearchWorkOrderModal />
-        <SearchEmployeeModal />
         <NewClientModal />
         <NewEmployeeModal /> 
+        <SearchEmployeeModal />
+        <SearchWorkOrderModal isSearchWorkOrderOpen={isSearchWorkOrderOpen} closeAllModals={() => setIsSearchWorkOrderOpen(false)} />
         <Toaster />
       </div>
     </ModalProvider>

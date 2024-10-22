@@ -14,7 +14,7 @@ import EditClientModal from './EditClientModal'
 
 export default function SearchClient() {
   //const { closeAllModals } = useModal()
-  const [searchId, setSearchId] = useState('')
+  const [cardIdentifi, setCardIdentifi] = useState<string>('')
   const [clientData, setClientData] = useState<Client | null>(null)
   const router = useRouter()
   const [editingClient, setEditingClient] = useState<Client | null>(null)
@@ -22,7 +22,7 @@ export default function SearchClient() {
 
   const handleSearch = async () => {
     try {
-      const response = await api.get(`/customer/find/${searchId}`)
+      const response = await api.get(`/customer/cedula/${cardIdentifi}`)
       if (response.ok) {
         const data = await response.json()
         setClientData(data)
@@ -104,8 +104,8 @@ export default function SearchClient() {
     <div className="space-y-4">
       <div className="flex items-end space-x-2">
         <div className="flex-1">
-          <Label htmlFor="searchId">ID del Cliente</Label>
-          <Input id="searchId" value={searchId} onChange={(e) => setSearchId(e.target.value)} />
+          <Label htmlFor="cardIdentifi">Identificación del Cliente</Label>
+          <Input id="cardIdentifi" value={cardIdentifi} onChange={(e) => setCardIdentifi(e.target.value)} />
         </div>
         <Button onClick={handleSearch}>Buscar</Button>
       </div>
@@ -125,7 +125,7 @@ export default function SearchClient() {
             <TableRow>
               <TableCell>{clientData.id_customer}</TableCell>
               <TableCell>{clientData.name}</TableCell>
-              <TableCell>{clientData.card_identifi}</TableCell>
+              <TableCell>{clientData.cardIdentifi}</TableCell>
               <TableCell>{clientData.phone}</TableCell>
               <TableCell>{clientData.mail}</TableCell>
               <TableCell>

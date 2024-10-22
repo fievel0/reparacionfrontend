@@ -6,6 +6,9 @@ export interface Employee {
     idEmployee: number
     nameEmployee: string
     positionEmployee: string
+    cedEmployee: string
+    dirEmployee: string
+    telEmployee: string
     orders?: Order[]
   }
   

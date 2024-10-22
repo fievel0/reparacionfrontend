@@ -17,7 +17,7 @@ interface EditClientModalProps {
   onCancel: () => void;
 }
 
-export default function EditClientModal({ client, onSave, onCancel }: EditClientModalProps) {
+export default function EditClientModal({ client, onSave, onCancel }: Readonly<EditClientModalProps>) {
   const [formData, setFormData] = useState(client)
 
   useEffect(() => {
@@ -49,8 +49,8 @@ export default function EditClientModal({ client, onSave, onCancel }: EditClient
             <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
           </div>
           <div>
-            <Label htmlFor="card_identifi">Identificación</Label>
-            <Input id="card_identifi" name="card_identifi" value={formData.card_identifi} onChange={handleChange} required />
+            <Label htmlFor="cardIdentifi">Identificación</Label>
+            <Input id="cardIdentifi" name="cardIdentifi" value={formData.cardIdentifi} onChange={handleChange} required />
           </div>
           <div>
             <Label htmlFor="phone">Teléfono</Label>

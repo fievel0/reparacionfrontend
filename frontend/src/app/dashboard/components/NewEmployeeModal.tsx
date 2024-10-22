@@ -20,7 +20,10 @@ export default function NewEmployeeModal() {
 
   const [formData, setFormData] = useState({
     nameEmployee: '',
-    positionEmployee: ''
+    positionEmployee: '',
+    cedEmployee:'',
+    dirEmployee:'',
+    telEmployee:'',
   })
   const router = useRouter()
 
@@ -68,6 +71,18 @@ export default function NewEmployeeModal() {
           <div>
             <Label htmlFor="positionEmployee">Cargo</Label>
             <Input id="positionEmployee" name="positionEmployee" value={formData.positionEmployee} onChange={handleChange} required />
+          </div>
+          <div>
+            <label htmlFor="cedEmployee">Identificación</label>
+            <Input id="cedEmployee" name="cedEmployee" value={formData.cedEmployee} onChange={handleChange} required />
+          </div>
+          <div>
+            <label htmlFor="dirEmployee">Dirección</label>
+            <Input id="dirEmployee" name="dirEmployee" value={formData.dirEmployee} onChange={handleChange} required />
+          </div>
+          <div>
+            <label htmlFor="telEmployee">Telefono</label>
+            <Input id="telEmployee" name="telEmployee" value={formData.telEmployee} onChange={handleChange} required />
           </div>
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={closeAllModals}>Cancelar</Button>

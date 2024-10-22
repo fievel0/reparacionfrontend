@@ -113,7 +113,7 @@ export default function ClientList() {
             <TableRow key={client.id_customer}>
               <TableCell>{client.id_customer}</TableCell>
               <TableCell>{client.name}</TableCell>
-              <TableCell>{client.card_identifi}</TableCell>
+              <TableCell>{client.cardIdentifi}</TableCell>
               <TableCell>{client.phone}</TableCell>
               <TableCell>{client.mail}</TableCell>
               <TableCell>

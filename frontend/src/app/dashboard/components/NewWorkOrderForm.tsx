@@ -8,18 +8,7 @@ import { Button } from "@/components/ui/button"
 import { api } from '@/utils/api'
 import { useRouter } from 'next/navigation'
 import { toast } from '@/hooks/use-toast'
-import NewClientModal from './NewClientModal'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-
-interface Order {
-  id_order: number;
-}
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 
 export default function NewWorkOrderForm() {
   const [formData, setFormData] = useState({
@@ -40,15 +29,17 @@ export default function NewWorkOrderForm() {
       detail_phy_equip: '',
       temp_equip: '',
       on_off_equip: false,
-      cau_dam_equip: ''
+      cau_dam_equip: '',
+      id_customer: ''
     },
     employee: { idEmployee: '' }
   })
-  const [clientData, setClientData] = useState(null)
-  const [showNewClientModal, setShowNewClientModal] = useState(false)
-  const [employees, setEmployees] = useState([])
+  const [clientData, setClientData] = useState<{ name?: string; cardIdentifi?: string; phone?: string; mail?: string } | null>(null)
+  const [employees, setEmployees] = useState<{ idEmployee: string; nameEmployee: string }[]>([]);
   const [nextOrderNumber, setNextOrderNumber] = useState<number | null>(null)
   const router = useRouter()
+  const [cardIdentifi, setCardIdentifi] = useState<string>('')
+  //const [isClientSelected, setIsClientSelected] = useState(false)
 
   useEffect(() => {
     fetchNextOrderNumber()
@@ -57,14 +48,17 @@ export default function NewWorkOrderForm() {
 
   const fetchNextOrderNumber = async () => {
     try {
-      const response = await api.get('/ord_rep/findAll')
+      const response = await api.get('/ord_rep/findLast');
       if (response.ok) {
-        const data: Order[] = await response.json()
-        const maxOrderNumber = Math.max(...data.map((order: Order) => order.id_order), 0)
-        setNextOrderNumber(maxOrderNumber + 1)
+        const data = await response.json();
+        const nextOrderNumber = data.id_order + 1;
+        setNextOrderNumber(nextOrderNumber);
+      } else if (response.status === 404) {
+        setNextOrderNumber(1);
       }
     } catch (error) {
-      console.error('Error fetching next order number:', error)
+      console.error('Error fetching next order number:', error);
+      setNextOrderNumber(1);
     }
   }
 
@@ -80,185 +74,269 @@ export default function NewWorkOrderForm() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }))
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    const { name, value } = e.target;
 
-  const handleEquipmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prevData => ({
-      ...prevData,
-      equipment: {
-        ...prevData.equipment,
+    // Verifica si el campo pertenece a equipment
+    if (name in formData.equipment) {
+      setFormData(prevData => ({
+        ...prevData,
+        equipment: {
+          ...prevData.equipment,
+          [name]: value
+        }
+      }));
+    } else {
+      setFormData(prevData => ({
+        ...prevData,
         [name]: value
-      }
-    }))
-  }
+      }));
+    }
+  };
 
   const handleCustomerSearch = async () => {
     try {
-      const response = await api.get(`/customer/find/${formData.customer.id_customer}`)
+      const response = await api.get(`/customer/cedula/${cardIdentifi}`);
       if (response.ok) {
-        const data = await response.json()
-        setClientData(data)
+        const data = await response.json();
+        setClientData(data);
+        setFormData(prevData => ({
+          ...prevData,
+          customer: { id_customer: data.id_customer }
+        }));
+        //setIsClientSelected(true);
       } else {
-        setShowNewClientModal(true)
+        toast({
+          title: "Cliente no encontrado",
+          description: "Si desea agregar un nuevo cliente, utilice el menú Clientes -> Nuevo Cliente.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error('Error searching for customer:', error)
+      console.error('Error searching for customer:', error);
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      // Save equipment first
-      const equipmentResponse = await api.post('/equipment/save', formData.equipment)
-      if (equipmentResponse.ok) {
-        const equipmentData = await equipmentResponse.json()
-        
-        // Now save the work order
-        const workOrderData = {
-          ...formData,
-          equipment: { id_equip: equipmentData.id_equip }
+        // Guardar el equipo
+        const equipmentResponse = await api.post('/equipment/save', {
+            model_equip: formData.equipment.model_equip,
+            brand_equip: formData.equipment.brand_equip,
+            color_equip: formData.equipment.color_equip,
+            state_equip: formData.equipment.state_equip,
+            pass_equip: formData.equipment.pass_equip,
+            anti_equip: formData.equipment.anti_equip,
+            accessor_equip: formData.equipment.accessor_equip,
+            reported_equip: formData.equipment.reported_equip,
+            detail_phy_equip: formData.equipment.detail_phy_equip,
+            temp_equip: formData.equipment.temp_equip,
+            on_off_equip: formData.equipment.on_off_equip,
+            cau_dam_equip: formData.equipment.cau_dam_equip,
+            id_customer: formData.customer.id_customer
+        });
+
+        if (!equipmentResponse.ok) {
+            throw new Error('Error al guardar el equipo');
         }
-        const workOrderResponse = await api.post('/ord_rep/save', workOrderData)
-        if (workOrderResponse.ok) {
-          toast({
+
+        const equipmentData = await equipmentResponse.json();
+        const id_equip = equipmentData.id; // Asignar el id del equipo guardado
+
+        // Guardar la orden de trabajo
+        const orderResponse = await api.post('/ord_rep/save', {
+            create_date: formData.create_date,
+            deadline: formData.deadline,
+            tot_pay: formData.tot_pay,
+            addit_details: formData.addit_details,
+            customer: { id_customer: formData.customer.id_customer },
+            equipment: { id_equip: id_equip },
+            employee: { idEmployee: formData.employee.idEmployee }
+        });
+
+        if (!orderResponse.ok) {
+            throw new Error('Error al guardar la orden de trabajo');
+        }
+
+        toast({
             title: "Éxito",
-            description: "La orden de trabajo ha sido guardada correctamente.",
-          })
-          router.push('/dashboard/work-orders')
-        } else {
-          throw new Error('Error al guardar la orden de trabajo')
-        }
-      } else {
-        throw new Error('Failed to save equipment')
-      }
+            description: "La operación fue exitosa.",
+        });
+
     } catch (error) {
-      console.error('Error saving work order:', error)
-      toast({
-        title: "Error",
-        description: "No se pudo guardar la orden de trabajo. Por favor, intente de nuevo.",
-        variant: "destructive",
-      })
+        console.error('Error:', error);
+        toast({
+            title: "Error",
+            description: "No se pudo guardar la orden de trabajo. Por favor, intente de nuevo.",
+            variant: "destructive",
+        });
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold mb-6 text-gray-700">ORDEN DE TRABAJO</h1>
-        <div>N° {nextOrderNumber}</div>
+        <h1 className="text-2xl font-bold mb-6 text-gray-700">ORDEN DE TRABAJO N° {nextOrderNumber}</h1>
       </div>
       
       <section>
         <h2 className="text-lg font-semibold mb-2 text-gray-600">DATOS CLIENTE</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="customer_id">ID Cliente</Label>
+            <Label htmlFor="customer_id">Identificación Cliente</Label>
             <div className="flex">
               <Input
                 id="customer_id"
                 name="customer.id_customer"
-                value={formData.customer.id_customer}
-                onChange={handleChange}
+                value={cardIdentifi}
+                onChange={(e) => setCardIdentifi(e.target.value)}
               />
-              <Button type="button" onClick={handleCustomerSearch}>Buscar</Button>
+              <Button type="button" onClick={handleCustomerSearch} className='ml-2'>Buscar</Button>
             </div>
           </div>
           {clientData && (
             <>
               <div>
                 <Label htmlFor="nombre">NOMBRE</Label>
-                <Input id="nombre" value={clientData?.name || ''} readOnly />
+                <Input id="nombre" value={clientData?.name ?? ''} readOnly />
               </div>
               <div>
-                <Label htmlFor="direccion">DIRECCIÓN</Label>
-                <Input id="direccion" value={clientData.address || ''} readOnly />
-              </div>
-              <div>
-                <Label htmlFor="cedula">CEDULA</Label>
-                <Input id="cedula" value={clientData.card_identifi} readOnly />
+                <Label htmlFor="cedula">IDENTIFICACION</Label>
+                <Input id="cedula" value={clientData.cardIdentifi} readOnly />
               </div>
               <div>
                 <Label htmlFor="telefono">TELEFONO</Label>
                 <Input id="telefono" value={clientData.phone} readOnly />
               </div>
+              <div>
+                <Label htmlFor="email">EMAIL</Label>
+                <Input id="email" value={clientData.mail} readOnly />
+              </div>
             </>
           )}
         </div>
       </section>
-
       <section>
         <h2 className="text-lg font-semibold mb-2 text-gray-600">DETALLES DEL DISPOSITIVO</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="model_equip">MODELO</Label>
-            <Input id="model_equip" name="model_equip" value={formData.equipment.model_equip} onChange={handleEquipmentChange} />
+            <Input
+              id="model_equip"
+              name="model_equip"
+              value={formData.equipment.model_equip}
+              onChange={handleChange}
+            />
           </div>
           <div>
             <Label htmlFor="brand_equip">MARCA</Label>
-            <Input id="brand_equip" name="brand_equip" value={formData.equipment.brand_equip} onChange={handleEquipmentChange} />
+            <Input
+              id="brand_equip"
+              name="brand_equip"
+              value={formData.equipment.brand_equip}
+              onChange={handleChange}
+            />
           </div>
           <div>
             <Label htmlFor="color_equip">COLOR</Label>
-            <Input id="color_equip" name="color_equip" value={formData.equipment.color_equip} onChange={handleEquipmentChange} />
+            <Input
+              id="color_equip"
+              name="color_equip"
+              value={formData.equipment.color_equip}
+              onChange={handleChange}
+            />
           </div>
           <div>
-            <Label htmlFor="state_equip">ESTADO DEL DISPOSITIVO</Label>
-            <Input id="state_equip" name="state_equip" value={formData.equipment.state_equip} onChange={handleEquipmentChange} placeholder="ENCENDIDO / APAGADO/ SE CALIENTA" />
+            <Label htmlFor="state_equip">ESTADO</Label>
+            <Input
+              id="state_equip"
+              name="state_equip"
+              value={formData.equipment.state_equip}
+              onChange={handleChange}
+            />
           </div>
           <div>
             <Label htmlFor="pass_equip">CONTRASEÑA</Label>
-            <Input id="pass_equip" name="pass_equip" value={formData.equipment.pass_equip} onChange={handleEquipmentChange} />
+            <Input
+              id="pass_equip"
+              name="pass_equip"
+              value={formData.equipment.pass_equip}
+              onChange={handleChange}
+            />
           </div>
           <div>
             <Label htmlFor="anti_equip">ANTIGÜEDAD</Label>
-            <Input id="anti_equip" name="anti_equip" value={formData.equipment.anti_equip} onChange={handleEquipmentChange} />
+            <Input
+              id="anti_equip"
+              name="anti_equip"
+              value={formData.equipment.anti_equip}
+              onChange={handleChange}
+            />
           </div>
           <div>
             <Label htmlFor="accessor_equip">ACCESORIOS</Label>
-            <Input id="accessor_equip" name="accessor_equip" value={formData.equipment.accessor_equip} onChange={handleEquipmentChange} />
+            <Input
+              id="accessor_equip"
+              name="accessor_equip"
+              value={formData.equipment.accessor_equip}
+              onChange={handleChange}
+            />
           </div>
           <div>
             <Label htmlFor="reported_equip">REPORTADO</Label>
-            <Input id="reported_equip" name="reported_equip" value={formData.equipment.reported_equip} onChange={handleEquipmentChange} />
+            <Input
+              id="reported_equip"
+              name="reported_equip"
+              value={formData.equipment.reported_equip}
+              onChange={handleChange}
+            />
           </div>
           <div>
-            <Label htmlFor="detail_phy_equip">DETALLE-DAÑO FÍSICO</Label>
-            <Input id="detail_phy_equip" name="detail_phy_equip" value={formData.equipment.detail_phy_equip} onChange={handleEquipmentChange} />
+            <Label htmlFor="detail_phy_equip">DETALLE DAÑO FÍSICO</Label>
+            <Input
+              id="detail_phy_equip"
+              name="detail_phy_equip"
+              value={formData.equipment.detail_phy_equip}
+              onChange={handleChange}
+            />
           </div>
           <div>
             <Label htmlFor="temp_equip">TEMPERATURA</Label>
-            <Input id="temp_equip" name="temp_equip" value={formData.equipment.temp_equip} onChange={handleEquipmentChange} />
+            <Input
+              id="temp_equip"
+              name="temp_equip"
+              value={formData.equipment.temp_equip}
+              onChange={handleChange}
+            />
           </div>
           <div>
             <Label htmlFor="on_off_equip">ENCENDIDO/APAGADO</Label>
             <Select
               name="on_off_equip"
-              value={formData.equipment.on_off_equip.toString()}
-              onValueChange={(value) => handleEquipmentChange({ target: { name: 'on_off_equip', value: value === 'true' } })}
-            >
+              value={formData.equipment.on_off_equip ? "si" : "no"}
+              onValueChange={(value) => setFormData(prevData => ({ ...prevData, equipment: { ...prevData.equipment, on_off_equip: value === "si" } }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Seleccione estado" />
+                <SelectValue placeholder="Seleccione" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="true">Encendido</SelectItem>
-                <SelectItem value="false">Apagado</SelectItem>
+                <SelectItem value="si">Sí</SelectItem>
+                <SelectItem value="no">No</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
             <Label htmlFor="cau_dam_equip">CAUSA DEL DAÑO</Label>
-            <Input id="cau_dam_equip" name="cau_dam_equip" value={formData.equipment.cau_dam_equip} onChange={handleEquipmentChange} />
+            <Input
+              id="cau_dam_equip"
+              name="cau_dam_equip"
+              value={formData.equipment.cau_dam_equip}
+              onChange={handleChange}
+            />
           </div>
         </div>
       </section>
+
 
       <section>
         <h2 className="text-lg font-semibold mb-2 text-gray-600">ORDEN EMITIDA POR</h2>
@@ -288,7 +366,6 @@ export default function NewWorkOrderForm() {
           </div>
         </div>
       </section>
-
       <section>
         <h2 className="text-lg font-semibold mb-2 text-gray-600">DETALLES ADICIONALES</h2>
         <Textarea
@@ -299,24 +376,11 @@ export default function NewWorkOrderForm() {
         />
       </section>
 
+
       <div className="flex justify-end space-x-2">
         <Button type="button" variant="outline" onClick={() => router.push('/dashboard/work-orders')}>Cancelar</Button>
         <Button type="submit">Guardar</Button>
       </div>
-
-      {showNewClientModal && (
-        <NewClientModal
-          onSave={(newClient) => {
-            setClientData(newClient)
-            setShowNewClientModal(false)
-            setFormData(prevData => ({
-              ...prevData,
-              customer: { id_customer: newClient.id_customer }
-            }))
-          }}
-          onCancel={() => setShowNewClientModal(false)}
-        />
-      )}
     </form>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,11 +19,23 @@ export default function NewClientModal() {
   const { isNewClientOpen, closeAllModals } = useModal()
   const [formData, setFormData] = useState({
     name: '',
-    card_identifi: '',
+    cardIdentifi: '',
     phone: '',
     mail: ''
   })
   const router = useRouter()
+
+  useEffect(() => {
+    if (isNewClientOpen) {
+      // Restablecer los campos a valores vacíos cuando se abra el modal
+      setFormData({
+        name: '',
+        cardIdentifi: '',
+        phone: '',
+        mail: ''
+      })
+    }
+  }, [isNewClientOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,7 +54,7 @@ export default function NewClientModal() {
         console.error('Error en la respuesta de la API')
         toast({
           title: "Error",
-          description: "No se pudo guardar el cliente. Por favor, intente de nuevo.",
+          description: "Ya existe otro cliente con el mismo número de identificación. Por favor verifique el número e intente de nuevo.",
           variant: "destructive",
         })
       }
@@ -70,8 +82,8 @@ export default function NewClientModal() {
             <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
           </div>
           <div>
-            <Label htmlFor="card_identifi">Identificación</Label>
-            <Input id="card_identifi" name="card_identifi" value={formData.card_identifi} onChange={handleChange} required />
+            <Label htmlFor="cardIdentifi">Identificación</Label>
+            <Input id="cardIdentifi" name="cardIdentifi" value={formData.cardIdentifi} onChange={handleChange} required />
           </div>
           <div>
             <Label htmlFor="phone">Teléfono</Label>

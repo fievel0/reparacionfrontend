@@ -19,7 +19,7 @@ type ClientDetailsProps = {
   onDelete?: (id: number) => void
 }
 
-export default function ClientDetails({ client, onEdit, onDelete }: ClientDetailsProps) {
+export default function ClientDetails({ client, onEdit, onDelete }: Readonly<ClientDetailsProps>) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const router = useRouter()
 
@@ -54,7 +54,7 @@ export default function ClientDetails({ client, onEdit, onDelete }: ClientDetail
       <div>
         <span> {client.id_customer}</span>
         <span className="text-lg font-semibold mb-2">{client.name}</span>
-        <span> {client.card_identifi}</span>
+        <span> {client.cardIdentifi}</span>
         <span> {client.phone}</span>
         <span> {client.mail}</span>
       </div>

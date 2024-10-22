@@ -12,9 +12,9 @@ import { toast } from '@/hooks/use-toast'
 import { Employee } from '../type/Employee'
 
 export default function EditEmployeeModal({ employee, onSave, onCancel }: {
-  employee: Employee;
-  onSave: (employee: Employee) => void;
-  onCancel: () => void;
+  readonly employee: Employee;
+  readonly onSave: (employee: Employee) => void;
+  readonly onCancel: () => void;
   }) {
   const [formData, setFormData] = useState<Employee>(employee);
 
@@ -23,11 +23,7 @@ export default function EditEmployeeModal({ employee, onSave, onCancel }: {
   }, [employee])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name === 'name' ? 'nameEmployee' : 'positionEmployee']: value
-    }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -51,7 +47,7 @@ export default function EditEmployeeModal({ employee, onSave, onCancel }: {
             <Input 
               id="name" 
               name="name" 
-              value={formData.nameEmployee as string} 
+              value={formData.nameEmployee} 
               onChange={handleChange} 
               required 
             />
@@ -63,6 +59,36 @@ export default function EditEmployeeModal({ employee, onSave, onCancel }: {
               id="position"
               name="position"
               value={formData.positionEmployee}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="cedEmployee">Identificación</Label>
+            <Input
+              id="cedEmployee"
+              name="cedEmployee"
+              value={formData.cedEmployee}
+              onChange={handleChange}
+              required
+            />
+            </div>
+            <div>
+            <Label htmlFor="dirEmployee">Dirección</Label>
+            <Input
+              id="dirEmployee"
+              name="dirEmployee"
+              value={formData.dirEmployee}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="telEmployee">Telefono</Label>
+            <Input
+              id="telEmployee"
+              name="telEmployee"
+              value={formData.telEmployee}
               onChange={handleChange}
               required
             />
