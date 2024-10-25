@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import {
@@ -12,23 +11,29 @@ import {
 import { useModal } from '@/contexts/Modalcontext'
 
 interface DashboardNavProps {
-  onShowClientList: () => void;
-  onShowEmployeeList: () => void;
-  onShowSearchClient: () => void;
-  onShowNewWorkOrder: () => void;
+  readonly onShowClientList: () => void;
+  readonly onShowEmployeeList: () => void;
+  readonly onShowSearchClient: () => void;
+  readonly onShowNewWorkOrder: () => void;
+  readonly onShowSearchWorkOrder: () => void;
+  readonly onShowWorkOrderList: () => void;
+  readonly onShowEquipmentList: () => void; // Nueva prop
 }
 
 export default function DashboardNav({ 
   onShowClientList, 
   onShowEmployeeList,
   onShowSearchClient,
-  onShowNewWorkOrder, // Asegúrate de que esta propiedad esté incluida
+  onShowNewWorkOrder,
+  onShowSearchWorkOrder,
+  onShowWorkOrderList,
+  onShowEquipmentList
 }: DashboardNavProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const { openSearchWorkOrder, openNewClient, openNewEmployee } = useModal()
+  const { openNewClient, openNewEmployee } = useModal()
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white shadow-md w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -67,17 +72,20 @@ export default function DashboardNav({
               </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost">Orden de Trabajo</Button>
+                  <Button variant="ghost">Órdenes de Trabajo</Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onSelect={onShowNewWorkOrder}>
-                    Nueva Orden
+                    Nueva Orden de Trabajo
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={openSearchWorkOrder}>
+                  <DropdownMenuItem onSelect={onShowSearchWorkOrder}>
                     Buscar Orden de Trabajo
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/dashboard/work-orders">Todas las Ordenes de Trabajo</Link>
+                  <DropdownMenuItem onSelect={onShowWorkOrderList}>
+                    Todas las Órdenes de Trabajo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={onShowEquipmentList}>
+                    Equipos en Reparación
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -136,17 +144,20 @@ export default function DashboardNav({
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="w-full text-left">Orden de Trabajo</Button>
+                <Button variant="ghost" className="w-full text-left">Órdenes de Trabajo</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem onSelect={onShowNewWorkOrder}>
-                  Nueva Orden
+                  Nueva Orden de Trabajo
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={openSearchWorkOrder}>
+                <DropdownMenuItem onSelect={onShowSearchWorkOrder}>
                   Buscar Orden de Trabajo
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link href="/dashboard/work-orders" className="w-full">Todas las Ordenes de Trabajo</Link>
+                <DropdownMenuItem onSelect={onShowWorkOrderList}>
+                  Todas las Órdenes de Trabajo
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={onShowEquipmentList}>
+                  Equipos en Reparación
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
