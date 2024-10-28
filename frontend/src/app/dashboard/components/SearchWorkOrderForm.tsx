@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,36 +12,17 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { toast } from "@/hooks/use-toast"
 
 interface SearchWorkOrderFormProps {
-  initialOrderId?: number;
-  onCancel?: () => void;
+  readonly initialOrderId?: number;
+  readonly onCancel?: () => void;
 }
 
-export default function SearchWorkOrderForm({ initialOrderId, onCancel }: SearchWorkOrderFormProps) {
+export default function SearchWorkOrderForm({ initialOrderId, onCancel }: Readonly<SearchWorkOrderFormProps>) {
   const [searchId, setSearchId] = useState(initialOrderId?.toString() || '')
   const [workOrderData, setWorkOrderData] = useState<WorkOrder | null>(null)
   const [employees, setEmployees] = useState<{ idEmployee: string; nameEmployee: string }[]>([])
   const router = useRouter()
 
-  useEffect(() => {
-    fetchEmployees()
-    if (initialOrderId) {
-      handleSearch()
-    }
-  }, [initialOrderId])
-
-  const fetchEmployees = async () => {
-    try {
-      const response = await api.get('/employee/findAll')
-      if (response.ok) {
-        const data = await response.json()
-        setEmployees(data)
-      }
-    } catch (error) {
-      console.error('Error fetching employees:', error)
-    }
-  }
-
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!/^\d+$/.test(searchId)) {
       toast({
         title: "Error",
@@ -68,6 +49,25 @@ export default function SearchWorkOrderForm({ initialOrderId, onCancel }: Search
       if (error instanceof Error && error.message === 'Token expired') {
         router.push('/login')
       }
+    }
+  }, [searchId, router])
+
+  useEffect(() => {
+    fetchEmployees()
+    if (initialOrderId) {
+      handleSearch()
+    }
+  }, [initialOrderId, handleSearch])
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await api.get('/employee/findAll')
+      if (response.ok) {
+        const data = await response.json()
+        setEmployees(data)
+      }
+    } catch (error) {
+      console.error('Error fetching employees:', error)
     }
   }
 
@@ -99,7 +99,9 @@ export default function SearchWorkOrderForm({ initialOrderId, onCancel }: Search
     if (!workOrderData) return
 
     try {
-      const response = await api.put(`/ord_rep/update/${workOrderData.id_order}`, workOrderData)
+      // Convertir workOrderData a un objeto plano
+      const plainData = JSON.parse(JSON.stringify(workOrderData))
+      const response = await api.put(`/ord_rep/update/${workOrderData.id_order}`, plainData)
       if (response.ok) {
         toast({
           title: "Éxito",
@@ -293,8 +295,18 @@ export default function SearchWorkOrderForm({ initialOrderId, onCancel }: Search
                 <Label htmlFor="on_off_equip">Encendido/Apagado</Label>
                 <Select
                   name="on_off_equip"
-                  value={workOrderData.equipment.on_off_equip ? "true" : "false"}
-                  onValueChange={(value) => handleEquipmentChange({ target: { name: 'on_off_equip', value: value === "true" } } as React.ChangeEvent<HTMLInputElement>)}
+                  value={workOrderData.equipment.on_off_equip.toString()}
+                  onValueChange={(value) => {
+                    if (workOrderData) {
+                      setWorkOrderData({
+                        ...workOrderData,
+                        equipment: {
+                          ...workOrderData.equipment,
+                          on_off_equip: value === "true"
+                        }
+                      })
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione" />

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useState, useContext } from 'react'
+import React, { createContext, useState, useContext, useMemo, useCallback } from 'react'
 
 type ModalContextType = {
   isSearchWorkOrderOpen: boolean
@@ -31,73 +31,87 @@ export const ModalProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isEmployeeListOpen, setIsEmployeeListOpen] = useState(false)
   const [isNewWorkOrderOpen, setIsNewWorkOrderOpen] = useState(false)
 
-  const openSearchWorkOrder = () => {
-    closeAllModals()
-    setIsSearchWorkOrderOpen(true)
-    setIsSearchClientOpen(false)
-    setIsSearchEmployeeOpen(false)
-  }
-
-  const openSearchClient = () => {
-    closeAllModals()
-    setIsSearchClientOpen(true)
-    setIsSearchEmployeeOpen(false)
-  }
-
-  const openSearchEmployee = () => {
-    closeAllModals()
-    setIsSearchEmployeeOpen(true)
-  }
-
-  const openNewClient = () => {
-    closeAllModals()
-    setIsNewClientOpen(true)
-  }
-
-  const openNewEmployee = () => {
-    closeAllModals()
-    setIsNewEmployeeOpen(true)
-  }
-
-  const closeAllModals = () => {
+  const closeAllModals = useCallback(() => {
     setIsSearchWorkOrderOpen(false)
     setIsSearchClientOpen(false)
     setIsSearchEmployeeOpen(false)
     setIsNewClientOpen(false)
     setIsNewEmployeeOpen(false)
     setIsEmployeeListOpen(false)
-  }
+    setIsNewWorkOrderOpen(false)
+  }, [])
 
-  const openEmployeeList = () => {
+  const openSearchWorkOrder = useCallback(() => {
+    closeAllModals()
+    setIsSearchWorkOrderOpen(true)
+  }, [closeAllModals])
+
+  const openSearchClient = useCallback(() => {
+    closeAllModals()
+    setIsSearchClientOpen(true)
+  }, [closeAllModals])
+
+  const openSearchEmployee = useCallback(() => {
+    closeAllModals()
+    setIsSearchEmployeeOpen(true)
+  }, [closeAllModals])
+
+  const openNewClient = useCallback(() => {
+    closeAllModals()
+    setIsNewClientOpen(true)
+  }, [closeAllModals])
+
+  const openNewEmployee = useCallback(() => {
+    closeAllModals()
+    setIsNewEmployeeOpen(true)
+  }, [closeAllModals])
+
+  const openEmployeeList = useCallback(() => {
     closeAllModals()
     setIsEmployeeListOpen(true)
-  }
+  }, [closeAllModals])
 
-  const openNewWorkOrder = () => {
+  const openNewWorkOrder = useCallback(() => {
     closeAllModals()
     setIsNewWorkOrderOpen(true)
-  }
+  }, [closeAllModals])
+
+  const value = useMemo(() => ({
+    isSearchWorkOrderOpen,
+    isSearchClientOpen,
+    isSearchEmployeeOpen,
+    isNewClientOpen,
+    isNewEmployeeOpen,
+    openSearchWorkOrder,
+    openSearchClient,
+    openSearchEmployee,
+    openNewClient,
+    openNewEmployee,
+    closeAllModals,
+    openEmployeeList,
+    isEmployeeListOpen,
+    isNewWorkOrderOpen,
+    openNewWorkOrder
+  }), [
+    isSearchWorkOrderOpen,
+    isSearchClientOpen,
+    isSearchEmployeeOpen,
+    isNewClientOpen,
+    isNewEmployeeOpen,
+    isEmployeeListOpen,
+    isNewWorkOrderOpen,
+    openSearchWorkOrder,
+    openSearchClient,
+    openSearchEmployee,
+    openNewClient,
+    openNewEmployee,
+    openEmployeeList,
+    openNewWorkOrder,
+    closeAllModals // <- Agregar esta dependencia
+  ])
 
   return (
-    <ModalContext.Provider
-      value={{
-        isSearchWorkOrderOpen,
-        isSearchClientOpen,
-        isSearchEmployeeOpen,
-        isNewClientOpen,
-        isNewEmployeeOpen,
-        openSearchWorkOrder,
-        openSearchClient,
-        openSearchEmployee,
-        openNewClient,
-        openNewEmployee,
-        closeAllModals,
-        openEmployeeList,
-        isEmployeeListOpen,
-        isNewWorkOrderOpen,
-        openNewWorkOrder
-      }}
-    >
+    <ModalContext.Provider value={value}>
       {children}
     </ModalContext.Provider>
   )

@@ -12,13 +12,17 @@ import { useRouter } from 'next/navigation'
 import { toast } from '@/hooks/use-toast'
 import { WorkOrder } from '../type/WorkOrder'
 
-type WorkOrderDetailsProps = {
+type WorkOrderDetailsProps = Readonly<{
   workOrder: WorkOrder
   onEdit?: (workOrder: WorkOrder) => void
   onDelete?: (id: number) => void
-}
+}>
 
-export default function WorkOrderDetails({ workOrder, onEdit, onDelete }: WorkOrderDetailsProps) {
+export default function WorkOrderDetails({ 
+  workOrder, 
+  onEdit, 
+  onDelete 
+}: WorkOrderDetailsProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const router = useRouter()
 

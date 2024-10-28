@@ -14,24 +14,7 @@ import {
 } from "@/components/ui/table"
 import { toast } from '@/hooks/use-toast'
 import EquipmentDetailsModal from './EquipmentDetailsModal'
-
-interface Equipment {
-  id_equip: number
-  model_equip: string
-  brand_equip: string
-  color_equip: string
-  state_equip: string
-  pass_equip: string
-  anti_equip: string
-  accessor_equip: string
-  reported_equip: string
-  detail_phy_equip: string
-  temp_equip: string
-  on_off_equip: boolean
-  cau_dam_equip: string
-  id_customer: number
-  name: string
-}
+import { Equipment } from '@/app/dashboard/type/Equipment'
 
 export default function EquipList() {
   const [equipments, setEquipments] = useState<Equipment[]>([])
@@ -51,6 +34,11 @@ export default function EquipList() {
       if (error instanceof Error && error.message === 'Token expired') {
         router.push('/login')
       }
+      toast({
+        title: "Error",
+        description: "Error al obtener la lista de equipos",
+        variant: "destructive",
+      })
     }
   }, [router])
 

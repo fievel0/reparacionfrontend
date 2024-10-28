@@ -5,10 +5,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
+import { Equipment } from "../type/Equipment"; // Ajusta la ruta según donde tengas definido el tipo Equipment
 
 interface EquipmentDetailsModalProps {
-  equipment: Equipment
-  onClose: () => void
+  readonly equipment: Equipment
+  readonly onClose: () => void
 }
 
 export default function EquipmentDetailsModal({ equipment, onClose }: EquipmentDetailsModalProps) {

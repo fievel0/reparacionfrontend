@@ -10,7 +10,7 @@ export interface Equipment {
     reported_equip: string
     detail_phy_equip: string
     temp_equip: string
-    on_off_equip: false,
+    on_off_equip: boolean,
     cau_dam_equip: string
     id_customer: string
     name: string
